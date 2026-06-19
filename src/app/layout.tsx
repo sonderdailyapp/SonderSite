@@ -17,7 +17,23 @@ const figtree = Figtree({
 
 export const metadata: Metadata = {
   title: "Sonder — Remember your days",
-  description: "Two questions. Every day. A year from now, you'll be glad you started.",
+  description: "A year from now, you'll be glad you started.",
+  icons: {
+    icon: "/icon.webp",
+    apple: "/icon.webp",
+  },
+  openGraph: {
+    title: "Sonder — Remember your days",
+    description: "A year from now, you'll be glad you started.",
+    url: "https://sonderdaily.app",
+    siteName: "Sonder",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Sonder — Remember your days",
+    description: "A year from now, you'll be glad you started.",
+  },
 };
 
 export default function RootLayout({
