@@ -6,11 +6,19 @@ export default function Home() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [validationMsg, setValidationMsg] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setStatus("loading");
     setErrorMsg("");
+    setValidationMsg("");
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setValidationMsg("Enter a valid email address.");
+      return;
+    }
+
+    setStatus("loading");
 
     const res = await fetch("/api/waitlist", {
       method: "POST",
@@ -45,7 +53,7 @@ export default function Home() {
 
         {/* Wordmark */}
         <p
-          className="animate-fade-up"
+          className="animate-wordmark"
           style={{
             fontFamily: "var(--font-body)",
             fontSize: "11px",
@@ -60,7 +68,7 @@ export default function Home() {
 
         {/* Headline — editorial serif */}
         <h1
-          className="animate-fade-up delay-100"
+          className="animate-headline delay-100"
           style={{
             fontFamily: "var(--font-display)",
             fontSize: "clamp(2.8rem, 7vw, 4.5rem)",
@@ -78,7 +86,7 @@ export default function Home() {
 
         {/* Coming soon — matches badge style */}
         <span
-          className="animate-fade-up delay-200 inline-flex items-center px-3 py-1 rounded-full text-[11px] tracking-[0.25em] uppercase"
+          className="animate-drift delay-200 inline-flex items-center px-3 py-1 rounded-full text-[11px] tracking-[0.25em] uppercase"
           style={{
             border: "1px solid rgba(255,255,255,0.08)",
             background: "rgba(255,255,255,0.03)",
@@ -102,7 +110,8 @@ export default function Home() {
         ) : (
           <form
             onSubmit={handleSubmit}
-            className="animate-fade-up delay-300"
+            noValidate
+            className="animate-form delay-300"
             style={{ display: "flex", gap: "0.625rem", width: "100%", maxWidth: "420px", flexWrap: "wrap" }}
           >
             <input
@@ -110,7 +119,6 @@ export default function Home() {
               placeholder="Your email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
               style={{
                 flex: 1,
                 minWidth: "0",
@@ -169,8 +177,13 @@ export default function Home() {
           </form>
         )}
 
+        {validationMsg && (
+          <p className="animate-fade-in" style={{ color: "#c9965a", fontSize: "0.8rem", marginTop: "-1rem", fontFamily: "var(--font-body)", letterSpacing: "0.02em", fontWeight: 500 }}>
+            {validationMsg}
+          </p>
+        )}
         {errorMsg && (
-          <p className="animate-fade-in" style={{ color: "#e07070", fontSize: "0.75rem", marginTop: "-1rem" }}>
+          <p className="animate-fade-in" style={{ color: "#8c8070", fontSize: "0.75rem", marginTop: "-1rem", fontFamily: "var(--font-body)", letterSpacing: "0.01em" }}>
             {errorMsg}
           </p>
         )}

@@ -21,9 +21,26 @@ body {
   font-family: var(--font-body), system-ui, sans-serif;
 }
 
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(18px); }
-  to   { opacity: 1; transform: translateY(0); }
+@keyframes wordmark-in {
+  0%   { opacity: 0; transform: translateY(8px); letter-spacing: 0.5em; }
+  100% { opacity: 1; transform: translateY(0);   letter-spacing: 0.3em; }
+}
+
+@keyframes headline-in {
+  0%   { opacity: 0; transform: translateY(28px); filter: blur(6px); }
+  60%  { filter: blur(0px); }
+  100% { opacity: 1; transform: translateY(0);    filter: blur(0px); }
+}
+
+@keyframes drift-in {
+  0%   { opacity: 0; transform: translateY(12px) scale(0.97); }
+  100% { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+@keyframes form-rise {
+  0%   { opacity: 0; transform: translateY(20px) scale(0.98); }
+  70%  { transform: translateY(-2px) scale(1.002); }
+  100% { opacity: 1; transform: translateY(0)    scale(1); }
 }
 
 @keyframes fade-in {
@@ -31,26 +48,31 @@ body {
   to   { opacity: 1; }
 }
 
-@keyframes glow-breathe {
-  0%, 100% { opacity: 0.5; transform: translateX(-50%) scale(1); }
-  50%       { opacity: 0.75; transform: translateX(-50%) scale(1.08); }
+@keyframes glow-drift {
+  0%   { opacity: 0.5; transform: translateX(-50%) translateY(0) scale(1); }
+  33%  { opacity: 0.7; transform: translateX(-52%) translateY(-12px) scale(1.06); }
+  66%  { opacity: 0.55; transform: translateX(-48%) translateY(-6px) scale(0.97); }
+  100% { opacity: 0.5; transform: translateX(-50%) translateY(0) scale(1); }
 }
 
-@keyframes success-pop {
-  0%   { opacity: 0; transform: scale(0.92) translateY(8px); }
-  65%  { transform: scale(1.02) translateY(0); }
-  100% { opacity: 1; transform: scale(1) translateY(0); }
+@keyframes success-in {
+  0%   { opacity: 0; transform: scale(0.9) translateY(10px); filter: blur(4px); }
+  60%  { filter: blur(0); transform: scale(1.02) translateY(-2px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
 }
 
-.animate-fade-up    { animation: fade-up 0.75s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.animate-fade-in    { animation: fade-in 0.5s ease both; }
-.animate-success    { animation: success-pop 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.animate-glow       { animation: glow-breathe 6s ease-in-out infinite; }
+.animate-wordmark  { animation: wordmark-in  0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-headline  { animation: headline-in  1s   cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-drift     { animation: drift-in     0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-form      { animation: form-rise    0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-fade-in   { animation: fade-in      0.5s ease both; }
+.animate-success   { animation: success-in   0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-glow      { animation: glow-drift   8s   ease-in-out infinite; }
 
 .delay-100 { animation-delay: 120ms; }
-.delay-200 { animation-delay: 240ms; }
-.delay-300 { animation-delay: 360ms; }
-.delay-400 { animation-delay: 480ms; }
+.delay-200 { animation-delay: 260ms; }
+.delay-300 { animation-delay: 400ms; }
+.delay-400 { animation-delay: 540ms; }
 
 @media (prefers-reduced-motion: reduce) {
   * {

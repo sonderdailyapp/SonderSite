@@ -23,9 +23,9 @@ export async function POST(req: NextRequest) {
   if (dbError) {
     console.error("Supabase error:", dbError);
     if (dbError.code === "23505") {
-      return NextResponse.json({ error: "You're already on the list." }, { status: 409 });
+      return NextResponse.json({ error: "You're already in." }, { status: 409 });
     }
-    return NextResponse.json({ error: "Failed to join. Try again." }, { status: 500 });
+    return NextResponse.json({ error: "Something went wrong. Try again." }, { status: 500 });
   }
 
   await resend.emails.send({
