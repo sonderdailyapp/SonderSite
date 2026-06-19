@@ -264,7 +264,7 @@ export default function Home() {
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
-        input::placeholder { color: #3d3a35; }
+        input::placeholder { color: #6b6558; }
       `}</style>
     </main>
   );

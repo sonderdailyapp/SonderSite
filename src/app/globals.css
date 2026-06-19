@@ -64,12 +64,12 @@ body {
 
 /* Float — irregular keyframes break the sine wave feel */
 @keyframes float-organic {
-  0%   { transform: translateY(0px)   rotate(0deg); }
-  18%  { transform: translateY(-7px)  rotate(0.2deg); }
-  41%  { transform: translateY(-11px) rotate(-0.15deg); }
-  58%  { transform: translateY(-5px)  rotate(0.1deg); }
-  79%  { transform: translateY(-9px)  rotate(-0.1deg); }
-  100% { transform: translateY(0px)   rotate(0deg); }
+  0%   { transform: translateY(0px)  rotate(0deg); }
+  18%  { transform: translateY(-3px) rotate(0.1deg); }
+  41%  { transform: translateY(-5px) rotate(-0.08deg); }
+  58%  { transform: translateY(-2px) rotate(0.05deg); }
+  79%  { transform: translateY(-4px) rotate(-0.05deg); }
+  100% { transform: translateY(0px)  rotate(0deg); }
 }
 
 @keyframes particle {
