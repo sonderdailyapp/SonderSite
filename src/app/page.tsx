@@ -113,7 +113,7 @@ export default function Home() {
   };
 
   return (
-    <main className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-[#0d0c0b]">
+    <main className="relative min-h-dvh flex flex-col items-center justify-center overflow-hidden bg-[#0d0c0b]">
 
       {/* Warm ambient glow */}
       <div

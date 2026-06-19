@@ -19,6 +19,8 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-body), system-ui, sans-serif;
+  overflow: hidden;
+  height: 100dvh;
 }
 
 /* Wordmark — opacity + blur only (no letter-spacing, causes repaints) */
