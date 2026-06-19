@@ -33,18 +33,12 @@ export async function POST(req: NextRequest) {
     to: email,
     subject: "You're in.",
     html: `
-      <div style="background:#0c0c0e;color:#f0ede8;font-family:Arial,sans-serif;padding:48px 32px;max-width:480px;margin:0 auto;">
-        <p style="font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:#6b6860;margin:0 0 32px;">Sonder</p>
-        <h1 style="font-size:28px;font-weight:600;margin:0 0 24px;line-height:1.3;">Your spot is saved.</h1>
-        <p style="color:#6b6860;font-size:14px;line-height:1.8;margin:0 0 24px;">
-          Sonder is two questions a day.<br>
-          One in the morning. One at night.<br><br>
-          A year from now, you'll look back and be glad you started here.
-        </p>
-        <p style="color:#6b6860;font-size:14px;line-height:1.8;margin:0 0 32px;">
-          We'll let you know when doors open.
-        </p>
-        <p style="color:#3d3d42;font-size:12px;margin:0;">— The Sonder Team</p>
+      <div style="background:#0d0c0b;font-family:Georgia,serif;padding:56px 40px;max-width:480px;margin:0 auto;">
+        <p style="font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#4a4540;margin:0 0 48px;font-family:Arial,sans-serif;">Sonder</p>
+        <h1 style="font-size:36px;font-weight:400;margin:0 0 16px;line-height:1.1;color:#ede8e0;">You're in.</h1>
+        <p style="font-style:italic;font-size:20px;color:#c4b49a;margin:0 0 40px;font-weight:400;">We'll see you on the other side.</p>
+        <div style="height:1px;background:linear-gradient(to right,transparent,#2a2620,transparent);margin:0 0 40px;"></div>
+        <p style="color:#4a4540;font-size:12px;margin:0;font-family:Arial,sans-serif;letter-spacing:0.05em;">— The Sonder Team</p>
       </div>
     `,
   });

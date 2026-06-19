@@ -107,13 +107,13 @@ export default function Home() {
             }}
           >
             {/* Line 1 */}
-            <span style={{ display: "block", overflow: "hidden", paddingBottom: "0.05em" }}>
+            <span style={{ display: "block" }}>
               <span className="animate-line delay-100" style={{ display: "block" }}>
                 Your days are worth
               </span>
             </span>
             {/* Line 2 */}
-            <span style={{ display: "block", overflow: "hidden", paddingBottom: "0.2em" }}>
+            <span style={{ display: "block" }}>
               <em className="animate-line delay-200" style={{ display: "block", fontStyle: "italic", fontWeight: 400, color: "#c4b49a" }}>
                 remembering.
               </em>
