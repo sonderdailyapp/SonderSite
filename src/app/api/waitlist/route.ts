@@ -10,7 +10,7 @@ const supabase = createClient(
 const resend = new Resend(process.env.RESEND_API_KEY!);
 
 export async function POST(req: NextRequest) {
-  const { email, name } = await req.json();
+  const { email } = await req.json();
 
   if (!email) {
     return NextResponse.json({ error: "Email is required." }, { status: 400 });
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
 
   const { error: dbError } = await supabase
     .from("waitlist")
-    .insert([{ email, name: name || null }]);
+    .insert([{ email }]);
 
   if (dbError) {
     console.error("Supabase error:", dbError);
