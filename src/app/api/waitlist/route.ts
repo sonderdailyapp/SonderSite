@@ -1,13 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
-import { Resend } from "resend";
 import { NextRequest, NextResponse } from "next/server";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
-
-const resend = new Resend(process.env.RESEND_API_KEY!);
 
 const rateLimit = new Map<string, { count: number; resetAt: number }>();
 
@@ -29,15 +26,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Too many attempts. Try again later." }, { status: 429 });
   }
 
-  const { email } = await req.json();
+  const body = await req.json();
+  const email = body.email;
+  const name = typeof body.name === "string" ? body.name.trim() : "";
 
-  if (!email) {
-    return NextResponse.json({ error: "Email is required." }, { status: 400 });
+  if (!email || typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return NextResponse.json({ error: "Valid email is required." }, { status: 400 });
+  }
+
+  if (name.length > 100) {
+    return NextResponse.json({ error: "Name is too long." }, { status: 400 });
   }
 
   const { error: dbError } = await supabase
     .from("waitlist")
-    .insert([{ email }]);
+    .insert([{ email, name: name || null }]);
 
   if (dbError) {
     console.error("Supabase error:", dbError);
@@ -47,20 +50,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Something went wrong. Try again." }, { status: 500 });
   }
 
-  await resend.emails.send({
-    from: "Sonder <hello@sonderdaily.app>",
-    to: email,
-    subject: "You're in.",
-    html: `
-      <div style="background:#0d0c0b;font-family:Georgia,serif;padding:56px 40px;max-width:480px;margin:0 auto;">
-        <p style="font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#4a4540;margin:0 0 48px;font-family:Arial,sans-serif;">Sonder</p>
-        <h1 style="font-size:36px;font-weight:400;margin:0 0 16px;line-height:1.1;color:#ede8e0;">You're in.</h1>
-        <p style="font-style:italic;font-size:20px;color:#c4b49a;margin:0 0 40px;font-weight:400;">We'll see you on the other side.</p>
-        <div style="height:1px;background:linear-gradient(to right,transparent,#2a2620,transparent);margin:0 0 40px;"></div>
-        <p style="color:#4a4540;font-size:12px;margin:0;font-family:Arial,sans-serif;letter-spacing:0.05em;">— The Sonder Team</p>
-      </div>
-    `,
-  });
+  const { count } = await supabase
+    .from("waitlist")
+    .select("*", { count: "exact", head: true });
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, position: count ?? 1 });
 }

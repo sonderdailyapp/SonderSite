@@ -3,37 +3,114 @@
 import { useState } from "react";
 
 export default function Home() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
-  const [validationMsg, setValidationMsg] = useState("");
+  const [position, setPosition] = useState(0);
+  const [shared, setShared] = useState(false);
+
+  const isValid = name.trim().length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!isValid) return;
     setErrorMsg("");
-    setValidationMsg("");
-
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setValidationMsg("Enter a valid email address.");
-      return;
-    }
-
     setStatus("loading");
 
     const res = await fetch("/api/waitlist", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email, name: name.trim() }),
     });
 
     const data = await res.json();
     if (res.ok) {
+      setPosition(data.position ?? 1);
       setStatus("success");
     } else {
       setStatus("error");
       setErrorMsg(data.error || "Something went wrong.");
     }
   }
+
+  async function handleShare() {
+    const text = `I'm #${position} on the Sonder waitlist — sonderdaily.app`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "Sonder", text, url: "https://sonderdaily.app" });
+      } else {
+        await navigator.clipboard.writeText(text);
+        setShared(true);
+        setTimeout(() => setShared(false), 2000);
+      }
+    } catch {}
+  }
+
+  function handleDownload() {
+    const svgName = name.trim()
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;") || "Guest";
+    const dateStr = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="480" viewBox="0 0 400 480">
+  <defs>
+    <pattern id="lines" x="0" y="68" width="400" height="28" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="27" x2="400" y2="27" stroke="rgba(139,120,90,0.13)" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="400" height="480" rx="4" fill="#f3ead8"/>
+  <rect x="0" y="68" width="400" height="412" fill="url(#lines)"/>
+  <rect x="0" y="0" width="7" height="480" fill="rgba(0,0,0,0.07)"/>
+  <line x1="52" y1="68" x2="52" y2="480" stroke="rgba(180,60,40,0.18)" stroke-width="1"/>
+  <text x="20" y="44" font-family="Arial,sans-serif" font-size="9" fill="#8b7855" letter-spacing="3">SONDER</text>
+  <text x="380" y="44" font-family="Arial,sans-serif" font-size="9" fill="#b8a490" text-anchor="end">${dateStr}</text>
+  <line x1="0" y1="56" x2="400" y2="56" stroke="rgba(139,120,90,0.2)" stroke-width="1"/>
+  <text x="68" y="110" font-family="Arial,sans-serif" font-size="8" fill="#b8a490" letter-spacing="3">EARLY ACCESS</text>
+  <text x="64" y="180" font-family="Georgia,serif" font-size="52" font-style="italic" fill="#2a1f12">${svgName}</text>
+  <text x="68" y="230" font-family="Arial,sans-serif" font-size="10" fill="#8b7855" letter-spacing="1">Entry no. ${position}</text>
+  <text x="68" y="278" font-family="Georgia,serif" font-size="12" font-style="italic" fill="#b8a490">"Your days are worth remembering."</text>
+  <rect width="400" height="480" rx="4" fill="none" stroke="rgba(139,120,90,0.18)" stroke-width="1"/>
+</svg>`;
+    const blob = new Blob([svg], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "sonder-journal.svg";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  const inputStyle = {
+    width: "100%",
+    background: "transparent",
+    border: "none",
+    borderBottom: "1px solid rgba(255,255,255,0.1)",
+    borderRadius: "0",
+    padding: "0.875rem 0",
+    fontSize: "1rem",
+    color: "#ede8e0",
+    fontFamily: "var(--font-body)",
+    outline: "none",
+    transition: "border-color 0.2s",
+    boxSizing: "border-box" as const,
+  };
+
+  const nameInputStyle = {
+    ...inputStyle,
+    fontFamily: "var(--font-display)",
+    fontStyle: "italic",
+    fontSize: "1.1rem",
+  };
+
+  const onFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.style.borderBottomColor = "rgba(196,149,106,0.55)";
+  };
+  const onBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.style.borderBottomColor = "rgba(255,255,255,0.1)";
+  };
 
   return (
     <main className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-[#0d0c0b]">
@@ -79,108 +156,190 @@ export default function Home() {
       <div className="relative z-10 flex flex-col items-center text-center px-6 max-w-xl w-full" style={{ gap: "2rem" }}>
 
         {/* Wordmark */}
-        <p
-          className="animate-wordmark"
-          style={{
-            fontFamily: "var(--font-body)",
-            fontSize: "11px",
-            letterSpacing: "0.3em",
-            textTransform: "uppercase",
-            color: "#4a4540",
-            fontWeight: 500,
-          }}
-        >
-          Sonder
-        </p>
-
-        {/* Headline — masked line reveal */}
-        <div className="animate-float" style={{ animationDelay: "1.2s" }}>
-          <h1
+        {status !== "success" && (
+          <p
+            className="animate-wordmark"
             style={{
-              fontFamily: "var(--font-display)",
-              fontSize: "clamp(2.8rem, 7vw, 4.5rem)",
+              fontFamily: "var(--font-body)",
+              fontSize: "11px",
+              letterSpacing: "0.3em",
+              textTransform: "uppercase",
+              color: "#4a4540",
               fontWeight: 500,
-              lineHeight: 1.05,
-              letterSpacing: "-0.01em",
-              color: "#ede8e0",
-              textAlign: "center",
             }}
           >
-            {/* Line 1 */}
-            <span style={{ display: "block" }}>
-              <span className="animate-line delay-100" style={{ display: "block" }}>
-                Your days are worth
-              </span>
-            </span>
-            {/* Line 2 */}
-            <span style={{ display: "block" }}>
-              <em className="animate-line delay-200" style={{ display: "block", fontStyle: "italic", fontWeight: 400, color: "#c4b49a" }}>
-                remembering.
-              </em>
-            </span>
-          </h1>
-        </div>
+            Sonder
+          </p>
+        )}
 
-        {/* Coming soon — matches badge style */}
-        <span
-          className="animate-drift delay-200 inline-flex items-center px-3 py-1 rounded-full text-[11px] tracking-[0.25em] uppercase"
-          style={{
-            border: "1px solid rgba(255,255,255,0.08)",
-            background: "rgba(255,255,255,0.03)",
-            color: "#8c8070",
-            fontFamily: "var(--font-body)",
-          }}
-        >
-          Coming soon
-        </span>
+        {/* Headline */}
+        {status !== "success" && (
+          <div className="animate-float" style={{ animationDelay: "1.2s" }}>
+            <h1
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "clamp(2.8rem, 7vw, 4.5rem)",
+                fontWeight: 500,
+                lineHeight: 1.05,
+                letterSpacing: "-0.01em",
+                color: "#ede8e0",
+                textAlign: "center",
+              }}
+            >
+              <span style={{ display: "block" }}>
+                <span className="animate-line delay-100" style={{ display: "block" }}>
+                  Your days are worth
+                </span>
+              </span>
+              <span style={{ display: "block" }}>
+                <em className="animate-line delay-200" style={{ display: "block", fontStyle: "italic", fontWeight: 400, color: "#c4b49a" }}>
+                  remembering.
+                </em>
+              </span>
+            </h1>
+          </div>
+        )}
+
 
         {/* Form / Success */}
         {status === "success" ? (
-          <div className="animate-success" style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-            <p style={{ fontFamily: "var(--font-display)", fontSize: "1.4rem", color: "#ede8e0" }}>
-              You&apos;re in.
-            </p>
-            <p style={{ fontFamily: "var(--font-body)", fontSize: "0.875rem", color: "#6b6558" }}>
-              We&apos;ll see you on the other side.
-            </p>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1.5rem" }}>
+
+            {/* Header text */}
+            <div className="animate-success" style={{ textAlign: "center" }}>
+              <p style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontSize: "1.1rem", color: "#c4b49a", margin: "0 0 4px" }}>
+                you&apos;re in.
+              </p>
+              <p style={{ fontFamily: "var(--font-body)", fontSize: "10px", letterSpacing: "0.25em", textTransform: "uppercase", color: "#4a4540", margin: 0 }}>
+                here&apos;s your entry
+              </p>
+            </div>
+
+            {/* Journal page card */}
+            <div style={{ animation: "success-in 0.7s cubic-bezier(0.22,1,0.36,1) 0.25s both" }}>
+              <div style={{
+                width: "290px",
+                background: "linear-gradient(175deg, #f5edd8 0%, #ede2c8 60%, #e8d8bc 100%)",
+                borderRadius: "3px",
+                boxShadow: "0 28px 70px rgba(0,0,0,0.72), 0 8px 24px rgba(0,0,0,0.4), 8px 0 28px rgba(74,50,24,0.5), -3px 0 10px rgba(0,0,0,0.3)",
+                transform: "rotate(-1deg)",
+                position: "relative",
+                overflow: "hidden",
+              }}>
+                {/* Binding shadow */}
+                <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "10px", background: "linear-gradient(to right, rgba(0,0,0,0.16), transparent)", zIndex: 1 }} />
+
+                {/* Ruled lines */}
+                <div style={{
+                  position: "absolute",
+                  left: 0, right: 0, top: "57px", bottom: 0,
+                  backgroundImage: "repeating-linear-gradient(transparent, transparent 27px, rgba(120,100,60,0.16) 27px, rgba(120,100,60,0.16) 28px)",
+                  backgroundSize: "100% 28px",
+                }} />
+
+                {/* Red margin line */}
+                <div style={{ position: "absolute", left: "44px", top: "57px", bottom: 0, width: "1px", background: "rgba(170,50,30,0.2)" }} />
+
+                {/* Header */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 22px 14px", borderBottom: "1px solid rgba(120,100,60,0.22)", position: "relative", zIndex: 1 }}>
+                  <span style={{ fontFamily: "var(--font-body)", fontSize: "8px", letterSpacing: "0.35em", textTransform: "uppercase", color: "#7a6845", fontWeight: 500 }}>Sonder</span>
+                  <span style={{ fontFamily: "var(--font-body)", fontSize: "9px", color: "#a89070", letterSpacing: "0.02em" }}>
+                    {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                  </span>
+                </div>
+
+                {/* Content */}
+                <div style={{ padding: "24px 22px 32px 56px", position: "relative", zIndex: 1 }}>
+                  <p style={{ fontFamily: "var(--font-body)", fontSize: "8px", letterSpacing: "0.3em", textTransform: "uppercase", color: "#a89070", margin: "0 0 28px", fontWeight: 500 }}>
+                    Early Access
+                  </p>
+
+                  <p style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 400, fontSize: "2.5rem", color: "#1a1208", margin: 0, lineHeight: 1.1 }}>
+                    {name.trim() || "Guest"}
+                  </p>
+
+                  <p style={{ fontFamily: "var(--font-body)", fontSize: "10px", color: "#7a6845", margin: "28px 0 0", letterSpacing: "0.05em" }}>
+                    Entry no. {position}
+                  </p>
+
+                </div>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div style={{ animation: "success-in 0.7s cubic-bezier(0.22,1,0.36,1) 0.4s both", display: "flex", gap: "12px" }}>
+              <button
+                onClick={handleDownload}
+                title="Download ticket"
+                style={{
+                  width: "44px", height: "44px", borderRadius: "50%",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  background: "rgba(255,255,255,0.03)",
+                  color: "#6b6558",
+                  cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  transition: "border-color 0.2s, color 0.2s",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)"; e.currentTarget.style.color = "#ede8e0"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "#6b6558"; }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 3v13M7 12l5 5 5-5M3 19h18"/>
+                </svg>
+              </button>
+
+              <button
+                onClick={handleShare}
+                title={shared ? "Copied!" : "Share"}
+                style={{
+                  width: "44px", height: "44px", borderRadius: "50%",
+                  border: `1px solid ${shared ? "rgba(196,149,106,0.4)" : "rgba(255,255,255,0.1)"}`,
+                  background: shared ? "rgba(196,149,106,0.08)" : "rgba(255,255,255,0.03)",
+                  color: shared ? "#c4956a" : "#6b6558",
+                  cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  transition: "all 0.2s",
+                }}
+                onMouseEnter={e => { if (!shared) { e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)"; e.currentTarget.style.color = "#ede8e0"; }}}
+                onMouseLeave={e => { if (!shared) { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "#6b6558"; }}}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                </svg>
+              </button>
+            </div>
           </div>
         ) : (
           <form
             onSubmit={handleSubmit}
             noValidate
             className="animate-form delay-300"
-            style={{ display: "flex", gap: "0.625rem", width: "100%", maxWidth: "420px", flexWrap: "wrap" }}
+            style={{ display: "flex", flexDirection: "column", gap: "0rem", width: "100%", maxWidth: "380px" }}
           >
+            <input
+              type="text"
+              placeholder="Your name"
+              value={name}
+              autoComplete="name"
+              onChange={(e) => setName(e.target.value)}
+              style={nameInputStyle}
+              onFocus={onFocus}
+              onBlur={onBlur}
+            />
             <input
               type="email"
               placeholder="Your email address"
               value={email}
+              autoComplete="email"
               onChange={(e) => setEmail(e.target.value)}
-              style={{
-                flex: 1,
-                minWidth: "0",
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "8px",
-                padding: "1rem 1.25rem",
-                fontSize: "1rem",
-                color: "#ede8e0",
-                fontFamily: "var(--font-body)",
-                outline: "none",
-                transition: "border-color 0.2s, background 0.2s",
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = "rgba(255,255,255,0.18)";
-                e.target.style.background = "rgba(255,255,255,0.06)";
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = "rgba(255,255,255,0.08)";
-                e.target.style.background = "rgba(255,255,255,0.04)";
-              }}
+              style={inputStyle}
+              onFocus={onFocus}
+              onBlur={onBlur}
             />
             <button
               type="submit"
-              disabled={status === "loading"}
+              disabled={!isValid || status === "loading"}
               style={{
                 background: "#ede8e0",
                 color: "#0d0c0b",
@@ -190,18 +349,19 @@ export default function Home() {
                 fontSize: "1rem",
                 fontWeight: 600,
                 fontFamily: "var(--font-body)",
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-                transition: "background 0.15s, transform 0.1s",
-                opacity: status === "loading" ? 0.6 : 1,
+                cursor: isValid && status !== "loading" ? "pointer" : "default",
+                width: "100%",
+                marginTop: "1.5rem",
+                transition: "background 0.15s, transform 0.1s, opacity 0.2s",
+                opacity: isValid ? (status === "loading" ? 0.6 : 1) : 0.3,
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.transform = "scale(1.03)"; }}
+              onMouseEnter={(e) => { if (isValid) { e.currentTarget.style.background = "#fff"; e.currentTarget.style.transform = "scale(1.02)"; }}}
               onMouseLeave={(e) => { e.currentTarget.style.background = "#ede8e0"; e.currentTarget.style.transform = "scale(1)"; }}
-              onMouseDown={(e) => { e.currentTarget.style.transform = "scale(0.97)"; }}
-              onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1.03)"; }}
+              onMouseDown={(e) => { if (isValid) e.currentTarget.style.transform = "scale(0.98)"; }}
+              onMouseUp={(e) => { if (isValid) e.currentTarget.style.transform = "scale(1.02)"; }}
             >
               {status === "loading" ? (
-                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
+                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>
                   <span style={{
                     width: "12px", height: "12px", borderRadius: "50%",
                     border: "2px solid rgba(0,0,0,0.2)", borderTopColor: "#0d0c0b",
@@ -214,11 +374,6 @@ export default function Home() {
           </form>
         )}
 
-        {validationMsg && (
-          <p className="animate-fade-in" style={{ color: "#c9965a", fontSize: "0.8rem", marginTop: "-1rem", fontFamily: "var(--font-body)", letterSpacing: "0.02em", fontWeight: 500 }}>
-            {validationMsg}
-          </p>
-        )}
         {errorMsg && (
           <p className="animate-fade-in" style={{ color: "#8c8070", fontSize: "0.75rem", marginTop: "-1rem", fontFamily: "var(--font-body)", letterSpacing: "0.01em" }}>
             {errorMsg}
@@ -256,7 +411,7 @@ export default function Home() {
         </a>
       </div>
 
-      {/* Horizon */}
+      {/* Horizon line */}
       <div
         className="pointer-events-none absolute bottom-0 left-0 right-0 h-px"
         style={{ background: "linear-gradient(to right, transparent, rgba(255,255,255,0.06), transparent)" }}
@@ -264,7 +419,8 @@ export default function Home() {
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
-        input::placeholder { color: #6b6558; }
+        input::placeholder { color: #4a4540; }
+        input[type="text"]::placeholder { font-family: var(--font-display); font-style: italic; }
       `}</style>
     </main>
   );
